@@ -1,6 +1,7 @@
 services:
   app:
     image: mrfzy00/spring-petclinic-docker:latest
+    restart: always
     ports:
       - 8000:8000
       - 8080:8080
@@ -11,6 +12,7 @@ services:
       - postgresdb
   postgresdb:
     image: postgres:14
+    restart: always
     ports:
       - 5432:5432
     environment:
