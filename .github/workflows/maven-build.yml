@@ -37,11 +37,13 @@ jobs:
         with:
           context: .
           push: true
-          tags: 
-            ${{ secrets.DOCKER_USERNAME }}/springboot-petclinic-docker:latest , ${{ secrets.DOCKER_USERNAME }}/springboot-petclinic-docker:${{ steps.semver.outputs.version }}
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/springboot-petclinic-docker:latest
+            ${{ secrets.DOCKER_USERNAME }}/springboot-petclinic-docker:${{ steps.semver.outputs.version }}
 
   publish:
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
