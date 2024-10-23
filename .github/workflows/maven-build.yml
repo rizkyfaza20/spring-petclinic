@@ -68,7 +68,7 @@ jobs:
           envsubst < docker-compose.yml.template > docker-compose.yml
 
       - name: scp into GCP instance
-        uses: appleboy/scp-action@master
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.GCE_IP_INSTANCE }}
           username: ${{ secrets.GCE_SSH_USERNAME }}
@@ -77,7 +77,7 @@ jobs:
           target: "/home/${{ secrets.GCE_SSH_USERNAME }}/"
 
       - name: SSH into GCP instance and deploy Maven
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.GCE_IP_INSTANCE }}
           username: ${{ secrets.GCE_SSH_USERNAME }}
