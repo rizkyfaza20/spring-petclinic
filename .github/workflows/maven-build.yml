@@ -37,11 +37,13 @@ jobs:
         with:
           context: .
           push: true
-          tags: 
-            ${{ secrets.DOCKER_USERNAME }}/springboot-petclinic-docker:latest , ${{ secrets.DOCKER_USERNAME }}/springboot-petclinic-docker:${{ steps.semver.outputs.version }}
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/springboot-petclinic-docker:latest
+            ${{ secrets.DOCKER_USERNAME }}/springboot-petclinic-docker:${{ steps.semver.outputs.version }}
 
   publish:
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
@@ -58,30 +60,34 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Modify environment variables in docker-compose.yml
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
-          sed -i "s|DATABASE_URL=.*|DATABASE_URL=${{ secrets.DATABASE_URL }}|" docker-compose.yml
-          sed -i "s|POSTGRES_USER=.*|POSTGRES_USER=${{ secrets.POSTGRES_USER }}|" docker-compose.yml
-          sed -i "s|POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}|" docker-compose.yml
-          sed -i "s|POSTGRES_DB=.*|POSTGRES_DB=${{ secrets.POSTGRES_DB }}|" docker-compose.yml  
-                  
+          cp docker-compose.yml docker-compose.yml.template
+          envsubst < docker-compose.yml.template > docker-compose.yml
+
       - name: scp into GCP instance
-        uses: appleboy/scp-action@master
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.GCE_IP_INSTANCE }}
           username: ${{ secrets.GCE_SSH_USERNAME }}
+          password: ${{ secrets.GCE_SSH_PASSWORD }}
           key: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
           source: "docker-compose.yml"
           target: "/home/${{ secrets.GCE_SSH_USERNAME }}/"
 
-      - name: SSH into GCP instance and deploy Django
-        uses: appleboy/ssh-action@master
+      - name: SSH into GCP instance and deploy Maven
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.GCE_IP_INSTANCE }}
           username: ${{ secrets.GCE_SSH_USERNAME }}
           key: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
           script: |
-            docker compose -f /home/${{ secrets.GCE_SSH_USERNAME }}/docker-compose.yml down
-            docker compose -f /home/${{ secrets.GCE_SSH_USERNAME }}/docker-compose.yml build --pull
-            docker compose -f /home/${{ secrets.GCE_SSH_USERNAME }}/docker-compose.yml up -d
+            docker-compose -f /home/${{ secrets.GCE_SSH_USERNAME }}/docker-compose.yml down
+            docker-compose -f /home/${{ secrets.GCE_SSH_USERNAME }}/docker-compose.yml build --pull
+            docker-compose -f /home/${{ secrets.GCE_SSH_USERNAME }}/docker-compose.yml up -d
 
             docker image prune -f
