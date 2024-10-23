@@ -1,6 +1,6 @@
 services:
   app:
-    image: mrfzy00/spring-petclinic-docker:latest
+    image: mrfzy00/springboot-petclinic-docker:latest
     restart: always
     ports:
       - 8000:8000
