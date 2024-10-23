@@ -84,8 +84,8 @@ jobs:
           username: ${{ secrets.GCE_SSH_USERNAME }}
           key: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
           script: |
-            docker compose -f /home/${{ secrets.GCE_SSH_USERNAME }}/docker-compose.yml down
-            docker compose -f /home/${{ secrets.GCE_SSH_USERNAME }}/docker-compose.yml build --pull
-            docker compose -f /home/${{ secrets.GCE_SSH_USERNAME }}/docker-compose.yml up -d
+            docker-compose -f /home/${{ secrets.GCE_SSH_USERNAME }}/docker-compose.yml down
+            docker-compose -f /home/${{ secrets.GCE_SSH_USERNAME }}/docker-compose.yml build --pull
+            docker-compose -f /home/${{ secrets.GCE_SSH_USERNAME }}/docker-compose.yml up -d
 
             docker image prune -f
